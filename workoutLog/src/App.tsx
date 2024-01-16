@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { createGlobalStyle } from 'styled-components';
 import reset from 'styled-reset';
+import Layout from './components/Layout';
 
 const GlobalStyles = createGlobalStyle`
   ${reset};
@@ -21,7 +22,9 @@ function App() {
   return (
     <>
       <GlobalStyles />
-      <Outlet />
+      <Layout>
+        <Outlet />
+      </Layout>
     </>
   );
 }
