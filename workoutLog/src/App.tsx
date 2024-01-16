@@ -1,7 +1,11 @@
-import { Outlet } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import { createGlobalStyle } from 'styled-components';
 import reset from 'styled-reset';
-import Layout from './components/Layout';
+
+import { useEffect, useState } from 'react';
+import LoadingScreen from './components/loading-screen';
+import router from './Router';
+import { auth } from './firebase';
 
 const GlobalStyles = createGlobalStyle`
   ${reset};
@@ -19,12 +23,20 @@ const GlobalStyles = createGlobalStyle`
 `;
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+  const init = async () => {
+    //파이어베이스 기다리기
+    await auth.authStateReady();
+
+    setIsLoading(false);
+  };
+  useEffect(() => {
+    init();
+  }, []);
   return (
     <>
       <GlobalStyles />
-      <Layout>
-        <Outlet />
-      </Layout>
+      {isLoading ? <LoadingScreen /> : <RouterProvider router={router} />}
     </>
   );
 }

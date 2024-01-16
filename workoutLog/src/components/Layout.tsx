@@ -8,11 +8,7 @@ import Link from '@mui/material/Link';
 
 import Container from '@mui/material/Container';
 import mainLogo from '../assets/healthLog.png';
-import { NavLink } from 'react-router-dom';
-
-type WrapperProps = {
-  children: React.ReactNode;
-};
+import { NavLink, Outlet } from 'react-router-dom';
 
 function Copyright(props: any) {
   return (
@@ -34,7 +30,7 @@ function Copyright(props: any) {
 
 const defaultTheme = createTheme();
 
-export default function Layout({ children }: WrapperProps) {
+export default function Layout() {
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
@@ -90,7 +86,7 @@ export default function Layout({ children }: WrapperProps) {
           </Button>
         </Toolbar>
       </AppBar>
-      {children}
+      <Outlet />
       {/* Footer */}
       <Container
         maxWidth="md"

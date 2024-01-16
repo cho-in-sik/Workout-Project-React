@@ -12,6 +12,16 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../firebase';
+import { useState } from 'react';
+import { FirebaseError } from 'firebase/app';
+import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+
+const Error = styled.div`
+  background-color: tomato;
+`;
 
 function Copyright(props: any) {
   return (
@@ -34,14 +44,52 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export default function Join() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [check, setCheck] = useState(false);
+  const [error, setError] = useState('');
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log(data.get('checkBox'));
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    setError('');
+    try {
+      console.log(check);
+      if (name === '' || email === '' || password === '') return;
+
+      const credentials = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+
+      await updateProfile(credentials.user, {
+        displayName: name,
+      });
+      navigate('/');
+    } catch (e) {
+      if (e instanceof FirebaseError) {
+        setError(e.message);
+      }
+    }
+  };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    console.log(e.target.checked);
+    if (name === 'name') {
+      setName(value);
+    } else if (name === 'email') {
+      setEmail(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    } else if (name === 'checkBox') {
+      let check = e.target.checked;
+      if (check === true) {
+        setCheck(true);
+      } else setCheck(false);
+    }
   };
 
   return (
@@ -78,6 +126,8 @@ export default function Join() {
                   id="name"
                   label="Name"
                   autoFocus
+                  value={name}
+                  onChange={onChange}
                 />
               </Grid>
 
@@ -89,6 +139,8 @@ export default function Join() {
                   label="Email"
                   name="email"
                   autoComplete="email"
+                  value={email}
+                  onChange={onChange}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -100,18 +152,21 @@ export default function Join() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  value={password}
+                  onChange={onChange}
                 />
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
                   control={
                     <Checkbox
-                      value="allowExtraEmails"
+                      value={check}
                       color="primary"
                       name="checkBox"
+                      onChange={onChange}
                     />
                   }
-                  label="I want to receive inspiration, marketing promotions and updates via email."
+                  label="마케팅 정보 수신에 동의합니다."
                 />
               </Grid>
             </Grid>
@@ -123,6 +178,7 @@ export default function Join() {
             >
               Join
             </Button>
+            {error !== '' ? <Error>{error}</Error> : null}
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link href="login" variant="body2">
