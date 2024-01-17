@@ -12,6 +12,12 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useState } from 'react';
+import { FirebaseError } from 'firebase/app';
+import { styled } from 'styled-components';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase';
+import { useNavigate } from 'react-router-dom';
 
 function Copyright(props: any) {
   return (
@@ -31,16 +37,46 @@ function Copyright(props: any) {
   );
 }
 
+const Error = styled.div`
+  background-color: tomato;
+`;
 const defaultTheme = createTheme();
 
 export default function Login() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [check, setCheck] = useState(false);
+  const [error, setError] = useState('');
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+
+    setError('');
+    try {
+      if (email === '' || password === '') return;
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/');
+    } catch (e) {
+      if (e instanceof FirebaseError) {
+        setError(e.message);
+      }
+    }
+  };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    console.log(e.target.checked);
+    if (name === 'email') {
+      setEmail(value);
+    } else if (name === 'password') {
+      setPassword(value);
+    } else if (name === 'checkBox') {
+      let check = e.target.checked;
+      if (check === true) {
+        setCheck(true);
+      } else setCheck(false);
+    }
   };
 
   return (
@@ -76,6 +112,8 @@ export default function Login() {
               name="email"
               autoComplete="email"
               autoFocus
+              onChange={onChange}
+              value={email}
             />
             <TextField
               margin="normal"
@@ -86,9 +124,11 @@ export default function Login() {
               type="password"
               id="password"
               autoComplete="current-password"
+              onChange={onChange}
+              value={password}
             />
             <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
+              control={<Checkbox value={check} color="primary" />}
               label="Remember me"
             />
             <Button
@@ -102,17 +142,18 @@ export default function Login() {
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
-                  Forgot password?
+                  비밀번호를 잊어버렸습니까?
                 </Link>
               </Grid>
               <Grid item>
                 <Link href="join" variant="body2">
-                  {"Don't have an account? Join"}
+                  {'계정이 없으시나요? Join'}
                 </Link>
               </Grid>
             </Grid>
           </Box>
         </Box>
+        {error !== '' ? <Error>{error}</Error> : null}
         <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
     </ThemeProvider>

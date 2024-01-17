@@ -6,11 +6,16 @@ import About from './routes/about';
 import Login from './routes/login';
 import Join from './routes/join';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/protected-route';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: '',

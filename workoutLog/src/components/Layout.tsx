@@ -5,10 +5,10 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
-
 import Container from '@mui/material/Container';
 import mainLogo from '../assets/healthLog.png';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
 
 function Copyright(props: any) {
   return (
@@ -31,9 +31,20 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export default function Layout() {
+  const navigate = useNavigate();
+  const user = auth.currentUser;
+  const onLogOut = async () => {
+    const ok = confirm('Are you sure you want to log out?');
+    if (ok) {
+      auth.signOut();
+      navigate('/');
+    }
+  };
+
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
+
       <AppBar
         position="static"
         color="transparent"
@@ -78,12 +89,25 @@ export default function Layout() {
               About
             </Link>
           </nav>
-          <Button href="login" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-            Login
-          </Button>
-          <Button href="join" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-            Join
-          </Button>
+          {user ? null : (
+            <>
+              <Button href="login" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Login
+              </Button>
+              <Button href="join" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Join
+              </Button>
+            </>
+          )}
+          {user && (
+            <Button
+              onClick={onLogOut}
+              variant="outlined"
+              sx={{ my: 1, mx: 1.5 }}
+            >
+              LogOut
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
       <Outlet />
@@ -99,7 +123,6 @@ export default function Layout() {
       >
         <Copyright sx={{ mt: 5 }} />
       </Container>
-      {/* End footer */}
     </ThemeProvider>
   );
 }
