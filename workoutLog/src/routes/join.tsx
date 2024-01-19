@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -16,12 +15,17 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useState } from 'react';
 import { FirebaseError } from 'firebase/app';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
 
-const Error = styled.div`
-  background-color: tomato;
-`;
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { ErrorAlert } from '../components/alert';
+
+interface IForm {
+  name: string;
+  email: string;
+  password: string;
+  check?: boolean;
+}
 
 function Copyright(props: any) {
   return (
@@ -45,50 +49,28 @@ const defaultTheme = createTheme();
 
 export default function Join() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [check, setCheck] = useState(false);
   const [error, setError] = useState('');
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError('');
-    try {
-      console.log(check);
-      if (name === '' || email === '' || password === '') return;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IForm>();
 
+  const onValid = async (data: IForm) => {
+    try {
       const credentials = await createUserWithEmailAndPassword(
         auth,
-        email,
-        password,
+        data.email,
+        data.password,
       );
-
       await updateProfile(credentials.user, {
-        displayName: name,
+        displayName: data.name,
       });
       navigate('/');
     } catch (e) {
       if (e instanceof FirebaseError) {
         setError(e.message);
       }
-    }
-  };
-
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    console.log(e.target.checked);
-    if (name === 'name') {
-      setName(value);
-    } else if (name === 'email') {
-      setEmail(value);
-    } else if (name === 'password') {
-      setPassword(value);
-    } else if (name === 'checkBox') {
-      let check = e.target.checked;
-      if (check === true) {
-        setCheck(true);
-      } else setCheck(false);
     }
   };
 
@@ -113,57 +95,64 @@ export default function Join() {
           <Box
             component="form"
             noValidate
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onValid)}
             sx={{ mt: 3 }}
           >
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField
                   autoComplete="given-name"
-                  name="name"
-                  required
                   fullWidth
                   id="name"
                   label="Name"
                   autoFocus
-                  value={name}
-                  onChange={onChange}
+                  {...register('name', {
+                    required: '이름은 필수로 입력하세요.',
+                    minLength: {
+                      value: 4,
+                      message: '최소 4글자 이상 입력해 주세요.',
+                    },
+                  })}
                 />
               </Grid>
-
+              <ErrorAlert errors={errors?.name?.message} />
               <Grid item xs={12}>
                 <TextField
-                  required
                   fullWidth
                   id="email"
                   label="Email"
-                  name="email"
                   autoComplete="email"
-                  value={email}
-                  onChange={onChange}
+                  {...register('email', {
+                    required: '이메일을 입력하세요.',
+                    pattern: {
+                      value: /^[A-Za-z0-9._%+-]+@naver.com$/,
+                      message: '네이버 아이디만 가능합니다.',
+                    },
+                  })}
                 />
               </Grid>
+              <ErrorAlert errors={errors?.email?.message} />
               <Grid item xs={12}>
                 <TextField
-                  required
                   fullWidth
-                  name="password"
                   label="Password"
                   type="password"
                   id="password"
                   autoComplete="new-password"
-                  value={password}
-                  onChange={onChange}
+                  {...register('password', {
+                    required: '비밀번호를 입력하세요.',
+                    minLength: { value: 6, message: '최소 6글자 이상입니다.' },
+                  })}
                 />
               </Grid>
+              <ErrorAlert errors={errors?.password?.message} />
               <Grid item xs={12}>
                 <FormControlLabel
                   control={
                     <Checkbox
-                      value={check}
+                      {...register('check')}
                       color="primary"
                       name="checkBox"
-                      onChange={onChange}
                     />
                   }
                   label="마케팅 정보 수신에 동의합니다."
@@ -178,7 +167,7 @@ export default function Join() {
             >
               Join
             </Button>
-            {error !== '' ? <Error>{error}</Error> : null}
+            {error !== '' ? <span>{error}</span> : null}
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link href="login" variant="body2">
