@@ -13,7 +13,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase';
-import { useState } from 'react';
+
 import { FirebaseError } from 'firebase/app';
 
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +25,7 @@ interface IForm {
   email: string;
   password: string;
   check?: boolean;
+  firebaseError?: string;
 }
 
 function Copyright(props: any) {
@@ -49,11 +50,12 @@ const defaultTheme = createTheme();
 
 export default function Join() {
   const navigate = useNavigate();
-  const [error, setError] = useState('');
+  // const [error, setError] = useState('');
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<IForm>();
 
   const onValid = async (data: IForm) => {
@@ -69,7 +71,11 @@ export default function Join() {
       navigate('/');
     } catch (e) {
       if (e instanceof FirebaseError) {
-        setError(e.message);
+        setError(
+          'firebaseError',
+          { message: `${e.message}` },
+          { shouldFocus: true },
+        );
       }
     }
   };
@@ -109,9 +115,13 @@ export default function Join() {
                   {...register('name', {
                     required: '이름은 필수로 입력하세요.',
                     minLength: {
-                      value: 4,
-                      message: '최소 4글자 이상 입력해 주세요.',
+                      value: 3,
+                      message: '최소 3글자 이상 입력해 주세요.',
                     },
+                    validate: (value) =>
+                      value === 'Matt'
+                        ? 'Matt라는 이름을 사용 할 수 없습니다.'
+                        : true,
                   })}
                 />
               </Grid>
@@ -167,7 +177,7 @@ export default function Join() {
             >
               Join
             </Button>
-            {error !== '' ? <span>{error}</span> : null}
+            <ErrorAlert errors={errors?.firebaseError?.message} />
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Link href="login" variant="body2">

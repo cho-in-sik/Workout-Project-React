@@ -13,5 +13,9 @@ export function BasicAlerts() {
 
 export function ErrorAlert({ errors }: any) {
   console.log(errors);
-  return <Alert severity="error">{errors}</Alert>;
+  return errors === undefined ? null : (
+    <Alert style={{}} severity="error">
+      {errors}
+    </Alert>
+  );
 }
