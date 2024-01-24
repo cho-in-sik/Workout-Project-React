@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ErrorAlert } from '../components/alert';
 
-interface IForm {
+export interface IForm {
   name: string;
   email: string;
   password: string;

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -12,12 +11,14 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useState } from 'react';
 import { FirebaseError } from 'firebase/app';
-import { styled } from 'styled-components';
+
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
+import { IForm } from './join';
+import { useForm } from 'react-hook-form';
+import { ErrorAlert } from '../components/alert';
 
 function Copyright(props: any) {
   return (
@@ -37,45 +38,28 @@ function Copyright(props: any) {
   );
 }
 
-const Error = styled.div`
-  background-color: tomato;
-`;
 const defaultTheme = createTheme();
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [check, setCheck] = useState(false);
-  const [error, setError] = useState('');
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setError('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<IForm>();
+  const onValid = async (data: IForm) => {
     try {
-      if (email === '' || password === '') return;
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, data.email, data.password);
       navigate('/');
     } catch (e) {
       if (e instanceof FirebaseError) {
-        setError(e.message);
+        setError(
+          'firebaseError',
+          { message: `${e.message}` },
+          { shouldFocus: true },
+        );
       }
-    }
-  };
-
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    console.log(e.target.checked);
-    if (name === 'email') {
-      setEmail(value);
-    } else if (name === 'password') {
-      setPassword(value);
-    } else if (name === 'checkBox') {
-      let check = e.target.checked;
-      if (check === true) {
-        setCheck(true);
-      } else setCheck(false);
     }
   };
 
@@ -99,36 +83,44 @@ export default function Login() {
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onValid)}
             noValidate
             sx={{ mt: 1 }}
           >
             <TextField
               margin="normal"
-              required
               fullWidth
               id="email"
               label="Email "
-              name="email"
               autoComplete="email"
               autoFocus
-              onChange={onChange}
-              value={email}
+              {...register('email', {
+                required: '이메일을 입력하세요.',
+                pattern: {
+                  value: /^[A-Za-z0-9._%+-]+@naver.com$/,
+                  message: '네이버 아이디만 가능합니다.',
+                },
+              })}
             />
+            <ErrorAlert errors={errors?.email?.message} />
             <TextField
               margin="normal"
-              required
               fullWidth
-              name="password"
               label="Password"
               type="password"
               id="password"
               autoComplete="current-password"
-              onChange={onChange}
-              value={password}
+              {...register('password', {
+                required: '비밀번호를 입력해 주세요.',
+                minLength: {
+                  value: 6,
+                  message: '최소 6글자 이상입니다.',
+                },
+              })}
             />
+            <ErrorAlert errors={errors?.password?.message} />
             <FormControlLabel
-              control={<Checkbox value={check} color="primary" />}
+              control={<Checkbox color="primary" />}
               label="Remember me"
             />
             <Button
@@ -139,7 +131,8 @@ export default function Login() {
             >
               Sign In
             </Button>
-            <Grid container>
+
+            <Grid container marginBottom={2}>
               <Grid item xs>
                 <Link href="#" variant="body2">
                   비밀번호를 잊어버렸습니까?
@@ -151,9 +144,10 @@ export default function Login() {
                 </Link>
               </Grid>
             </Grid>
+            <ErrorAlert errors={errors?.firebaseError?.message} />
           </Box>
         </Box>
-        {error !== '' ? <Error>{error}</Error> : null}
+
         <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>
     </ThemeProvider>
