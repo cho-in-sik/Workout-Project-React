@@ -12,7 +12,6 @@ export function BasicAlerts() {
 }
 
 export function ErrorAlert({ errors }: any) {
-  console.log(errors);
   return errors === undefined ? null : (
     <Alert style={{}} severity="error">
       {errors}

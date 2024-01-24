@@ -7,6 +7,7 @@ import Login from './routes/login';
 import Join from './routes/join';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/protected-route';
+import Profile from './routes/profile';
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
       {
         path: 'about',
         element: <About />,
+      },
+      {
+        path: 'profile',
+        element: <Profile />,
       },
     ],
     errorElement: <ErrorComponent />,

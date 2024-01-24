@@ -100,6 +100,11 @@ export default function Layout() {
             </>
           )}
           {user && (
+            <Button href="profile" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+              profile
+            </Button>
+          )}
+          {user && (
             <Button
               onClick={onLogOut}
               variant="outlined"
