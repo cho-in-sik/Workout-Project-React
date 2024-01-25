@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { IForm } from './join';
 import { useForm } from 'react-hook-form';
 import { ErrorAlert } from '../components/alert';
+import GithubButton from '../components/github-btn';
 
 function Copyright(props: any) {
   return (
@@ -123,6 +124,7 @@ export default function Login() {
               control={<Checkbox color="primary" />}
               label="Remember me"
             />
+            <GithubButton />
             <Button
               type="submit"
               fullWidth

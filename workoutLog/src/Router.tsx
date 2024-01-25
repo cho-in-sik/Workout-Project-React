@@ -8,27 +8,40 @@ import Join from './routes/join';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/protected-route';
 import Profile from './routes/profile';
+import Record from './routes/record';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <ProtectedRoute>
-        <Layout />
-      </ProtectedRoute>
-    ),
+    element: <Layout />,
     children: [
       {
         path: '',
         element: <Home />,
       },
       {
+        path: 'record',
+        element: (
+          <ProtectedRoute>
+            <Record />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'about',
-        element: <About />,
+        element: (
+          <ProtectedRoute>
+            <About />
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'profile',
-        element: <Profile />,
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
       },
     ],
     errorElement: <ErrorComponent />,

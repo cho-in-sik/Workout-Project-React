@@ -44,7 +44,6 @@ export default function Layout() {
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
-
       <AppBar
         position="static"
         color="transparent"
@@ -67,24 +66,24 @@ export default function Layout() {
             <Link
               variant="button"
               color="text.primary"
-              href="#"
-              sx={{ my: 1, mx: 1.5 }}
+              href="record"
+              sx={{ my: 1, mx: 1.5, textDecoration: 'none' }}
             >
-              abcd
+              write
             </Link>
             <Link
               variant="button"
               color="text.primary"
               href="#"
-              sx={{ my: 1, mx: 1.5 }}
+              sx={{ my: 1, mx: 1.5, textDecoration: 'none' }}
             >
-              efgh
+              community
             </Link>
             <Link
               variant="button"
               color="text.primary"
               href="/about"
-              sx={{ my: 1, mx: 1.5 }}
+              sx={{ my: 1, mx: 1.5, textDecoration: 'none' }}
             >
               About
             </Link>

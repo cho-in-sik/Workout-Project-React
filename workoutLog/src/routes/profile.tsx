@@ -4,22 +4,44 @@ import Button from '@mui/joy/Button';
 import Divider from '@mui/joy/Divider';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
-
 import Input from '@mui/joy/Input';
 import IconButton from '@mui/joy/IconButton';
-
 import Stack from '@mui/joy/Stack';
-
 import Typography from '@mui/joy/Typography';
 import Card from '@mui/joy/Card';
 import CardActions from '@mui/joy/CardActions';
 import CardOverflow from '@mui/joy/CardOverflow';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
-
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { CssVarsProvider } from '@mui/joy/styles';
+import { auth } from '../firebase';
+import { updateProfile } from 'firebase/auth';
+import DeleteModal from '../components/deleteModal';
+import { styled } from '@mui/joy';
+import { useState } from 'react';
+
+const VisuallyHiddenInput = styled('input')`
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  white-space: nowrap;
+  width: 1px;
+`;
 
 export default function Profile() {
+  const user = auth.currentUser;
+  const [avatar, setAvatar] = useState(user?.photoURL);
+  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target;
+    if (files && files.length === 1) {
+      const file = files[0];
+      // const locationRef = ref(stroage, 'avatars');
+    }
+  };
   return (
     <CssVarsProvider>
       <Box sx={{ flex: 1, width: '100%' }}>
@@ -44,7 +66,50 @@ export default function Profile() {
               sx={{ display: { xs: 'none', md: 'flex' }, my: 1 }}
             >
               <Stack spacing={2} sx={{ flexGrow: 1 }}>
-                <Stack spacing={1}>
+                <Stack direction="row" spacing={2}>
+                  <Stack direction="column" spacing={1}>
+                    <FormLabel>프로필 이미지</FormLabel>
+                    <AspectRatio
+                      ratio="1"
+                      maxHeight={200}
+                      sx={{ flex: 1, minWidth: 120, borderRadius: '100%' }}
+                    >
+                      {avatar ? (
+                        <img src={avatar} />
+                      ) : (
+                        <img
+                          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
+                          srcSet="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286&dpr=2 2x"
+                          loading="lazy"
+                          alt=""
+                        />
+                      )}
+                    </AspectRatio>
+
+                    <IconButton
+                      component="label"
+                      aria-label="upload new picture"
+                      size="sm"
+                      sx={{
+                        bgcolor: 'background.body',
+                        position: 'absolute',
+                        zIndex: 2,
+                        borderRadius: '50%',
+                        left: 100,
+                        top: 170,
+                        boxShadow: 'sm',
+                      }}
+                    >
+                      <EditRoundedIcon />
+                      <VisuallyHiddenInput
+                        onChange={onAvatarChange}
+                        type="file"
+                        accept="image/*"
+                      />
+                    </IconButton>
+                  </Stack>
+                </Stack>
+                <Stack spacing={1} direction="row">
                   <FormLabel>이름</FormLabel>
                   <FormControl
                     sx={{
@@ -52,7 +117,10 @@ export default function Profile() {
                       gap: 2,
                     }}
                   >
-                    <Input size="sm" placeholder="name" />
+                    <Input
+                      size="sm"
+                      value={user?.displayName ? user?.displayName : ''}
+                    />
                   </FormControl>
                 </Stack>
                 <Stack direction="row" spacing={2}>
@@ -60,26 +128,15 @@ export default function Profile() {
                     <FormLabel>Role</FormLabel>
                     <Input size="sm" defaultValue="UI Developer" />
                   </FormControl>
-                  <FormControl sx={{ flexGrow: 1 }}>
-                    <FormLabel>이메일</FormLabel>
-                    <Input
-                      size="sm"
-                      type="email"
-                      startDecorator={<EmailRoundedIcon />}
-                      placeholder="email"
-                      defaultValue="siriwatk@test.com"
-                      sx={{ flexGrow: 1 }}
-                    />
-                  </FormControl>
                 </Stack>
               </Stack>
             </Stack>
-            <Stack
+            {/* <Stack
               direction="column"
               spacing={2}
               sx={{ display: { xs: 'flex', md: 'none' }, my: 1 }}
-            >
-              <Stack direction="row" spacing={2}>
+            > */}
+            {/* <Stack direction="row" spacing={2}>
                 <Stack spacing={1} sx={{ flexGrow: 1 }}>
                   <FormLabel>Name</FormLabel>
                   <FormControl
@@ -91,7 +148,7 @@ export default function Profile() {
                       gap: 2,
                     }}
                   >
-                    <Input size="sm" placeholder="First name" />
+                    <Input size="sm" placeholder="name" />
                   </FormControl>
                 </Stack>
               </Stack>
@@ -110,7 +167,7 @@ export default function Profile() {
                   sx={{ flexGrow: 1 }}
                 />
               </FormControl>
-            </Stack>
+            </Stack> */}
             <CardOverflow
               sx={{ borderTop: '1px solid', borderColor: 'divider' }}
             >
@@ -123,43 +180,19 @@ export default function Profile() {
           </Card>
           <Card>
             <Box sx={{ mb: 1 }}>
-              <Typography level="title-md">Profile image</Typography>
+              <Typography level="title-md">Email</Typography>
             </Box>
             <Divider />
-            <Stack direction="row" spacing={2}>
-              <Stack direction="column" spacing={1}>
-                <AspectRatio
-                  ratio="1"
-                  maxHeight={200}
-                  sx={{ flex: 1, minWidth: 120, borderRadius: '100%' }}
-                >
-                  <img
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
-                    srcSet="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286&dpr=2 2x"
-                    loading="lazy"
-                    alt=""
-                  />
-                </AspectRatio>
-                <IconButton
-                  aria-label="upload new picture"
-                  size="sm"
-                  variant="outlined"
-                  color="neutral"
-                  sx={{
-                    bgcolor: 'background.body',
-                    position: 'absolute',
-                    zIndex: 2,
-                    borderRadius: '50%',
-                    left: 100,
-                    top: 170,
-                    boxShadow: 'sm',
-                  }}
-                  type=""
-                >
-                  <EditRoundedIcon />
-                </IconButton>
-              </Stack>
-            </Stack>
+            <FormControl sx={{ flexGrow: 1 }}>
+              <FormLabel>이메일</FormLabel>
+              <Input
+                size="sm"
+                type="email"
+                startDecorator={<EmailRoundedIcon />}
+                value={user?.email ? user?.email : ''}
+                sx={{ flexGrow: 1 }}
+              />
+            </FormControl>
             <CardOverflow
               sx={{ borderTop: '1px solid', borderColor: 'divider' }}
             >
@@ -178,18 +211,12 @@ export default function Profile() {
               </Typography>
             </Box>
             <Divider />
-            <Button size="sm" color="danger">
-              회원탈퇴
-            </Button>
+
+            <DeleteModal />
+
             <CardOverflow
               sx={{ borderTop: '1px solid', borderColor: 'divider' }}
-            >
-              <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
-                <Button size="sm" variant="solid">
-                  Save
-                </Button>
-              </CardActions>
-            </CardOverflow>
+            ></CardOverflow>
           </Card>
         </Stack>
       </Box>
