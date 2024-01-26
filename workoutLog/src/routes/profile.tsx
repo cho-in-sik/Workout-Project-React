@@ -15,10 +15,12 @@ import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { CssVarsProvider } from '@mui/joy/styles';
 import { auth } from '../firebase';
-import { updateProfile } from 'firebase/auth';
+import { updateProfile, updateEmail } from 'firebase/auth';
 import DeleteModal from '../components/deleteModal';
 import { styled } from '@mui/joy';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FirebaseError } from 'firebase/app';
 
 const VisuallyHiddenInput = styled('input')`
   clip: rect(0 0 0 0);
@@ -33,13 +35,33 @@ const VisuallyHiddenInput = styled('input')`
 `;
 
 export default function Profile() {
+  const navigate = useNavigate();
   const user = auth.currentUser;
   const [avatar, setAvatar] = useState(user?.photoURL);
+  const [email, setEmail] = useState(user?.email);
+  const [error, setError] = useState('');
   const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     if (files && files.length === 1) {
       const file = files[0];
       // const locationRef = ref(stroage, 'avatars');
+    }
+  };
+  const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const handleEmailSubmit = async () => {
+    try {
+      if (!email) return;
+      if (user) {
+        await updateEmail(user, email);
+      }
+      navigate('/');
+    } catch (e) {
+      if (e instanceof FirebaseError) {
+        console.log(e);
+      }
     }
   };
   return (
@@ -189,15 +211,17 @@ export default function Profile() {
                 size="sm"
                 type="email"
                 startDecorator={<EmailRoundedIcon />}
-                value={user?.email ? user?.email : ''}
+                value={email || ''}
                 sx={{ flexGrow: 1 }}
+                onChange={onEmailChange}
               />
             </FormControl>
+
             <CardOverflow
               sx={{ borderTop: '1px solid', borderColor: 'divider' }}
             >
               <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
-                <Button size="sm" variant="solid">
+                <Button size="sm" variant="solid" onClick={handleEmailSubmit}>
                   Save
                 </Button>
               </CardActions>
