@@ -23,7 +23,7 @@ export default function Home() {
         {' '}
         <Typography
           component="h1"
-          variant="h1"
+          variant="h2"
           align="center"
           color="text.primary"
           fontWeight="600"
@@ -35,7 +35,7 @@ export default function Home() {
         </Typography>
         <Typography
           component="h1"
-          variant="h1"
+          variant="h2"
           align="center"
           color="text.primary"
           gutterBottom

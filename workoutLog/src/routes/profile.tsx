@@ -14,6 +14,7 @@ import CardOverflow from '@mui/joy/CardOverflow';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { CssVarsProvider } from '@mui/joy/styles';
+
 import { auth } from '../firebase';
 import { updateProfile, updateEmail } from 'firebase/auth';
 import DeleteModal from '../components/deleteModal';
@@ -21,7 +22,11 @@ import { styled } from '@mui/joy';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
+import { useForm } from 'react-hook-form';
 
+interface IForm {
+  email?: string;
+}
 const VisuallyHiddenInput = styled('input')`
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
@@ -36,10 +41,16 @@ const VisuallyHiddenInput = styled('input')`
 
 export default function Profile() {
   const navigate = useNavigate();
+
   const user = auth.currentUser;
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+    setError,
+  } = useForm();
   const [avatar, setAvatar] = useState(user?.photoURL);
-  const [email, setEmail] = useState(user?.email);
-  const [error, setError] = useState('');
+
   const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     if (files && files.length === 1) {
@@ -47,23 +58,22 @@ export default function Profile() {
       // const locationRef = ref(stroage, 'avatars');
     }
   };
-  const onEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
 
-  const handleEmailSubmit = async () => {
+  const handleEmailSubmit = async (data: IForm) => {
+    if (data.email === undefined) return;
     try {
-      if (!email) return;
       if (user) {
-        await updateEmail(user, email);
+        await updateEmail(user, data.email);
       }
       navigate('/');
     } catch (e) {
       if (e instanceof FirebaseError) {
-        console.log(e);
+        setError('firebaseError', { message: `${e.message}` });
       }
     }
   };
+
+  console.log(errors);
   return (
     <CssVarsProvider>
       <Box sx={{ flex: 1, width: '100%' }}>
@@ -145,20 +155,14 @@ export default function Profile() {
                     />
                   </FormControl>
                 </Stack>
-                <Stack direction="row" spacing={2}>
-                  <FormControl>
-                    <FormLabel>Role</FormLabel>
-                    <Input size="sm" defaultValue="UI Developer" />
-                  </FormControl>
-                </Stack>
               </Stack>
             </Stack>
-            {/* <Stack
+            <Stack
               direction="column"
               spacing={2}
               sx={{ display: { xs: 'flex', md: 'none' }, my: 1 }}
-            > */}
-            {/* <Stack direction="row" spacing={2}>
+            >
+              <Stack direction="row" spacing={2}>
                 <Stack spacing={1} sx={{ flexGrow: 1 }}>
                   <FormLabel>Name</FormLabel>
                   <FormControl
@@ -174,10 +178,7 @@ export default function Profile() {
                   </FormControl>
                 </Stack>
               </Stack>
-              <FormControl>
-                <FormLabel>Role</FormLabel>
-                <Input size="sm" defaultValue="UI Developer" />
-              </FormControl>
+
               <FormControl sx={{ flexGrow: 1 }}>
                 <FormLabel>Email</FormLabel>
                 <Input
@@ -189,7 +190,7 @@ export default function Profile() {
                   sx={{ flexGrow: 1 }}
                 />
               </FormControl>
-            </Stack> */}
+            </Stack>
             <CardOverflow
               sx={{ borderTop: '1px solid', borderColor: 'divider' }}
             >
@@ -211,9 +212,15 @@ export default function Profile() {
                 size="sm"
                 type="email"
                 startDecorator={<EmailRoundedIcon />}
-                value={email || ''}
+                placeholder={user?.email || ''}
                 sx={{ flexGrow: 1 }}
-                onChange={onEmailChange}
+                {...register('email', {
+                  required: '이메일을 입력해주세요',
+                  pattern: {
+                    value: /^[A-Za-z0-9._%+-]+@naver.com$/,
+                    message: '네이버 아이디만 가능합니다.',
+                  },
+                })}
               />
             </FormControl>
 
@@ -221,7 +228,11 @@ export default function Profile() {
               sx={{ borderTop: '1px solid', borderColor: 'divider' }}
             >
               <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
-                <Button size="sm" variant="solid" onClick={handleEmailSubmit}>
+                <Button
+                  size="sm"
+                  variant="solid"
+                  onClick={handleSubmit(handleEmailSubmit)}
+                >
                   Save
                 </Button>
               </CardActions>
