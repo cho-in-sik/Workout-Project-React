@@ -17,6 +17,7 @@
     "@mui/joy": "^5.0.0-beta.24",
     "@mui/material": "^5.15.4",
     "@mui/styled-engine-sc": "^6.0.0-alpha.12",
+    "@mui/x-charts": "^6.19.1",
     "@types/styled-components": "^5.1.34",
     "firebase": "^10.7.1",
     "react": "^18.2.0",
