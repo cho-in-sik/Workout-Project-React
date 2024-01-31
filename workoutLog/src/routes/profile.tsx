@@ -11,21 +11,23 @@ import Typography from '@mui/joy/Typography';
 import Card from '@mui/joy/Card';
 import CardActions from '@mui/joy/CardActions';
 import CardOverflow from '@mui/joy/CardOverflow';
-import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { CssVarsProvider } from '@mui/joy/styles';
 
-import { auth } from '../firebase';
-import { updateProfile, updateEmail } from 'firebase/auth';
+import { auth, storage } from '../firebase';
+import { updateProfile } from 'firebase/auth';
 import DeleteModal from '../components/deleteModal';
 import { styled } from '@mui/joy';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
 import { useForm } from 'react-hook-form';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import ProfileEmailForm from '../components/profile/profileEmailForm';
 
 interface IForm {
   email?: string;
+  username?: string;
 }
 const VisuallyHiddenInput = styled('input')`
   clip: rect(0 0 0 0);
@@ -51,19 +53,30 @@ export default function Profile() {
   } = useForm();
   const [avatar, setAvatar] = useState(user?.photoURL);
 
-  const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
+    if (!user) return;
     if (files && files.length === 1) {
       const file = files[0];
-      // const locationRef = ref(stroage, 'avatars');
+      const locationRef = ref(
+        storage,
+        `avatars/${user.uid}-${user.displayName}`,
+      );
+      const result = await uploadBytes(locationRef, file);
+      const avatarUrl = await getDownloadURL(result.ref);
+      setAvatar(avatarUrl);
+      await updateProfile(user, {
+        photoURL: avatarUrl,
+      });
     }
   };
 
-  const handleEmailSubmit = async (data: IForm) => {
-    if (data.email === undefined) return;
+  const handleNameSubmit = async (data: IForm) => {
+    console.log(1);
+    if (data.username === undefined) return;
     try {
       if (user) {
-        await updateEmail(user, data.email);
+        await updateProfile(user, { displayName: data.username });
       }
       navigate('/');
     } catch (e) {
@@ -73,7 +86,6 @@ export default function Profile() {
     }
   };
 
-  console.log(errors);
   return (
     <CssVarsProvider>
       <Box sx={{ flex: 1, width: '100%' }}>
@@ -134,6 +146,7 @@ export default function Profile() {
                     >
                       <EditRoundedIcon />
                       <VisuallyHiddenInput
+                        id="avatar"
                         onChange={onAvatarChange}
                         type="file"
                         accept="image/*"
@@ -150,13 +163,33 @@ export default function Profile() {
                     }}
                   >
                     <Input
+                      id="name-change"
                       size="sm"
-                      value={user?.displayName ? user?.displayName : ''}
+                      placeholder={user?.displayName ? user?.displayName : ''}
+                      {...register('username', {
+                        required: '이름을 입력해주세요',
+                        minLength: {
+                          value: 4,
+                          message: '최소 4글자 이상입니다.',
+                        },
+                      })}
                     />
                   </FormControl>
                 </Stack>
+                <CardActions sx={{ alignSelf: 'flex-end' }}>
+                  <Button
+                    id="name-change"
+                    type="submit"
+                    size="sm"
+                    variant="solid"
+                    onClick={handleSubmit(handleNameSubmit)}
+                  >
+                    Save
+                  </Button>
+                </CardActions>
               </Stack>
             </Stack>
+
             <Stack
               direction="column"
               spacing={2}
@@ -164,7 +197,7 @@ export default function Profile() {
             >
               <Stack direction="row" spacing={2}>
                 <Stack spacing={1} sx={{ flexGrow: 1 }}>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>이름</FormLabel>
                   <FormControl
                     sx={{
                       display: {
@@ -179,19 +212,9 @@ export default function Profile() {
                 </Stack>
               </Stack>
 
-              <FormControl sx={{ flexGrow: 1 }}>
-                <FormLabel>Email</FormLabel>
-                <Input
-                  size="sm"
-                  type="email"
-                  startDecorator={<EmailRoundedIcon />}
-                  placeholder="email"
-                  defaultValue="siriwatk@test.com"
-                  sx={{ flexGrow: 1 }}
-                />
-              </FormControl>
+              {/* 여기에 작아졌을때 프로필 변경 넣어주기 */}
             </Stack>
-            <CardOverflow
+            {/* <CardOverflow
               sx={{ borderTop: '1px solid', borderColor: 'divider' }}
             >
               <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
@@ -199,44 +222,14 @@ export default function Profile() {
                   Save
                 </Button>
               </CardActions>
-            </CardOverflow>
+            </CardOverflow> */}
           </Card>
           <Card>
             <Box sx={{ mb: 1 }}>
               <Typography level="title-md">Email</Typography>
             </Box>
             <Divider />
-            <FormControl sx={{ flexGrow: 1 }}>
-              <FormLabel>이메일</FormLabel>
-              <Input
-                size="sm"
-                type="email"
-                startDecorator={<EmailRoundedIcon />}
-                placeholder={user?.email || ''}
-                sx={{ flexGrow: 1 }}
-                {...register('email', {
-                  required: '이메일을 입력해주세요',
-                  pattern: {
-                    value: /^[A-Za-z0-9._%+-]+@naver.com$/,
-                    message: '네이버 아이디만 가능합니다.',
-                  },
-                })}
-              />
-            </FormControl>
-
-            <CardOverflow
-              sx={{ borderTop: '1px solid', borderColor: 'divider' }}
-            >
-              <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
-                <Button
-                  size="sm"
-                  variant="solid"
-                  onClick={handleSubmit(handleEmailSubmit)}
-                >
-                  Save
-                </Button>
-              </CardActions>
-            </CardOverflow>
+            <ProfileEmailForm />{' '}
           </Card>
           <Card>
             <Box sx={{ mb: 1 }}>
