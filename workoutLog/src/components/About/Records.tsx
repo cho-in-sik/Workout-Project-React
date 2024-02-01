@@ -1,100 +1,95 @@
-import * as React from 'react';
-import Link from '@mui/material/Link';
+import { Fragment, useEffect, useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Title from './Title';
+import { auth, db } from '../../firebase';
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore';
 
-// Generate Order Data
-function createData(
-  id: number,
-  date: string,
-  name: string,
-  shipTo: string,
-  paymentMethod: string,
-  amount: number,
-) {
-  return { id, date, name, shipTo, paymentMethod, amount };
-}
-
-const rows = [
-  createData(
-    0,
-    '16 Mar, 2019',
-    'Elvis Presley',
-    'Tupelo, MS',
-    'VISA ⠀•••• 3719',
-    312.44,
-  ),
-  createData(
-    1,
-    '16 Mar, 2019',
-    'Paul McCartney',
-    'London, UK',
-    'VISA ⠀•••• 2574',
-    866.99,
-  ),
-  createData(
-    2,
-    '16 Mar, 2019',
-    'Tom Scholz',
-    'Boston, MA',
-    'MC ⠀•••• 1253',
-    100.81,
-  ),
-  createData(
-    3,
-    '16 Mar, 2019',
-    'Michael Jackson',
-    'Gary, IN',
-    'AMEX ⠀•••• 2000',
-    654.39,
-  ),
-  createData(
-    4,
-    '15 Mar, 2019',
-    'Bruce Springsteen',
-    'Long Branch, NJ',
-    'VISA ⠀•••• 5919',
-    212.79,
-  ),
-];
-
-function preventDefault(event: React.MouseEvent) {
-  event.preventDefault();
+interface IWeight {
+  id: string;
+  squat: number;
+  bench: number;
+  dead: number;
+  username?: string;
+  userId?: string;
+  createdAt: number;
 }
 
 export default function Records() {
+  const user = auth.currentUser;
+  const [weights, setWeights] = useState<IWeight[]>([]);
+  const fetchWeights = async () => {
+    const weightsQuery = query(
+      collection(db, '3weights'),
+      where('userId', '==', user?.uid),
+      orderBy('createdAt', 'desc'),
+      limit(12),
+    );
+    const snapshot = await getDocs(weightsQuery);
+    const weights = snapshot.docs.map((doc) => {
+      const { createdAt, squat, bench, dead, userId } = doc.data();
+      return { createdAt, squat, bench, dead, id: doc.id, userId };
+    });
+    setWeights(weights);
+  };
+
+  useEffect(() => {
+    fetchWeights();
+  }, []);
+
+  function dateFormat(date: any) {
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+    let hour = date.getHours();
+
+    month = month >= 10 ? month : '0' + month;
+    day = day >= 10 ? day : '0' + day;
+    hour = hour >= 10 ? hour : '0' + hour;
+
+    return date.getFullYear() + '-' + month + '-' + day + ' ' + hour + '시';
+  }
+
   return (
-    <React.Fragment>
+    <Fragment>
       <Title>Records</Title>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Date</TableCell>
-            <TableCell>Squat</TableCell>
-            <TableCell>BenchPress</TableCell>
-            <TableCell>DeadLift</TableCell>
-            <TableCell align="right">TOTAL</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{row.date}</TableCell>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.shipTo}</TableCell>
-              <TableCell>{row.paymentMethod}</TableCell>
-              <TableCell align="right">{`$${row.amount}`}</TableCell>
+      <div style={{ height: '100%', overflow: 'auto' }}>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
+              <TableCell>Squat</TableCell>
+              <TableCell>BenchPress</TableCell>
+              <TableCell>DeadLift</TableCell>
+              <TableCell align="right">TOTAL</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Link color="primary" href="#" onClick={preventDefault} sx={{ mt: 3 }}>
-        See more orders
-      </Link>
-    </React.Fragment>
+          </TableHead>
+          <TableBody>
+            {weights.map((weight) => (
+              <TableRow key={weight.id}>
+                <TableCell>{`${dateFormat(
+                  new Date(weight.createdAt),
+                )}`}</TableCell>
+                <TableCell>{weight.squat}</TableCell>
+                <TableCell>{weight.bench}</TableCell>
+                <TableCell>{weight.dead}</TableCell>
+                <TableCell align="right">{`${
+                  weight.bench + weight.squat + weight.dead
+                }`}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </Fragment>
   );
 }

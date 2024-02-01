@@ -10,10 +10,12 @@ import {
 import { auth } from '../../firebase';
 import { useForm } from 'react-hook-form';
 import { FirebaseError } from 'firebase/app';
-import { updateEmail, reauthenticateWithCredential } from 'firebase/auth';
+import { updateEmail } from 'firebase/auth';
+import { userRecertification } from '../userRecertification';
 
 export default function ProfileEmailForm() {
   const user = auth.currentUser;
+
   const {
     register,
     formState: { errors },
