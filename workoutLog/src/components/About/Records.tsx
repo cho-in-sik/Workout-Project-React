@@ -7,13 +7,18 @@ import TableRow from '@mui/material/TableRow';
 import Title from './Title';
 import { auth, db } from '../../firebase';
 import {
+  Unsubscribe,
   collection,
-  getDocs,
+  deleteDoc,
+  doc,
   limit,
+  onSnapshot,
   orderBy,
   query,
   where,
 } from 'firebase/firestore';
+import { IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface IWeight {
   id: string;
@@ -28,24 +33,44 @@ interface IWeight {
 export default function Records() {
   const user = auth.currentUser;
   const [weights, setWeights] = useState<IWeight[]>([]);
-  const fetchWeights = async () => {
-    const weightsQuery = query(
-      collection(db, '3weights'),
-      where('userId', '==', user?.uid),
-      orderBy('createdAt', 'desc'),
-      limit(12),
-    );
-    const snapshot = await getDocs(weightsQuery);
-    const weights = snapshot.docs.map((doc) => {
-      const { createdAt, squat, bench, dead, userId } = doc.data();
-      return { createdAt, squat, bench, dead, id: doc.id, userId };
-    });
-    setWeights(weights);
-  };
 
   useEffect(() => {
+    let unsubscribe: Unsubscribe | null = null;
+    const fetchWeights = async () => {
+      const weightsQuery = query(
+        collection(db, '3weights'),
+        where('userId', '==', user?.uid),
+        orderBy('createdAt', 'desc'),
+        limit(12),
+      );
+      // const snapshot = await getDocs(weightsQuery);
+      // const weights = snapshot.docs.map((doc) => {
+      //   const { createdAt, squat, bench, dead, userId } = doc.data();
+      //   return { createdAt, squat, bench, dead, id: doc.id, userId };
+      // });
+      // setWeights(weights);
+      unsubscribe = onSnapshot(weightsQuery, (snapshot) => {
+        const weights = snapshot.docs.map((doc) => {
+          const { createdAt, squat, bench, dead } = doc.data();
+          return { createdAt, squat, bench, dead, id: doc.id };
+        });
+        setWeights(weights);
+      });
+    };
     fetchWeights();
+    return () => {
+      unsubscribe && unsubscribe();
+    };
   }, []);
+
+  const onDelete = async (e: any) => {
+    const id = e.currentTarget.id;
+    try {
+      await deleteDoc(doc(db, '3weights', id));
+    } catch (error) {
+      alert(error);
+    }
+  };
 
   function dateFormat(date: any) {
     let month = date.getMonth() + 1;
@@ -67,10 +92,13 @@ export default function Records() {
           <TableHead>
             <TableRow>
               <TableCell>Date</TableCell>
-              <TableCell>Squat</TableCell>
+              <TableCell>Squat </TableCell>
               <TableCell>BenchPress</TableCell>
               <TableCell>DeadLift</TableCell>
               <TableCell align="right">TOTAL</TableCell>
+              <TableCell align="right" style={{ color: 'tomato' }}>
+                DELETE
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -85,6 +113,17 @@ export default function Records() {
                 <TableCell align="right">{`${
                   weight.bench + weight.squat + weight.dead
                 }`}</TableCell>
+                <TableCell align="right">
+                  <IconButton
+                    id={weight.id}
+                    size="small"
+                    aria-label="delete"
+                    style={{ cursor: 'pointer' }}
+                    onClick={onDelete}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
