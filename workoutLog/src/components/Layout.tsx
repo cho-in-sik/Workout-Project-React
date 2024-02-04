@@ -7,8 +7,9 @@ import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 import Container from '@mui/material/Container';
 import mainLogo from '../assets/healthLog.png';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { auth } from '../firebase';
+import UserIcon from './userIcon';
 
 function Copyright(props: any) {
   return (
@@ -31,15 +32,7 @@ function Copyright(props: any) {
 const defaultTheme = createTheme();
 
 export default function Layout() {
-  const navigate = useNavigate();
   const user = auth.currentUser;
-  const onLogOut = async () => {
-    const ok = confirm('Are you sure you want to log out?');
-    if (ok) {
-      auth.signOut();
-      navigate('/');
-    }
-  };
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -79,14 +72,14 @@ export default function Layout() {
             >
               community
             </Link>
-            <Link
+            {/* <Link
               variant="button"
               color="text.primary"
               href="/about"
               sx={{ my: 1, mx: 1.5, textDecoration: 'none' }}
             >
               About
-            </Link>
+            </Link> */}
           </nav>
           {user ? null : (
             <>
@@ -98,20 +91,7 @@ export default function Layout() {
               </Button>
             </>
           )}
-          {user && (
-            <Button href="profile" variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-              profile
-            </Button>
-          )}
-          {user && (
-            <Button
-              onClick={onLogOut}
-              variant="outlined"
-              sx={{ my: 1, mx: 1.5 }}
-            >
-              LogOut
-            </Button>
-          )}
+          {user && <UserIcon />}
         </Toolbar>
       </AppBar>
       <Outlet />

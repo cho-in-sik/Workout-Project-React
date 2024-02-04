@@ -131,7 +131,7 @@ export default function Login() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              로그인
             </Button>
 
             <Grid container marginBottom={2}>
