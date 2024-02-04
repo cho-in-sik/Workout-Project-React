@@ -9,7 +9,7 @@ import Container from '@mui/material/Container';
 import mainLogo from '../assets/healthLog.png';
 import { NavLink, Outlet } from 'react-router-dom';
 import { auth } from '../firebase';
-import UserIcon from './userIcon';
+import UserIcon from './UserIcon';
 
 function Copyright(props: any) {
   return (
@@ -59,27 +59,15 @@ export default function Layout() {
             <Link
               variant="button"
               color="text.primary"
-              href="record"
               sx={{ my: 1, mx: 1.5, textDecoration: 'none' }}
             >
-              write
+              <NavLink
+                to={'/community'}
+                style={{ textDecoration: 'none', color: 'black' }}
+              >
+                community
+              </NavLink>
             </Link>
-            <Link
-              variant="button"
-              color="text.primary"
-              href="#"
-              sx={{ my: 1, mx: 1.5, textDecoration: 'none' }}
-            >
-              community
-            </Link>
-            {/* <Link
-              variant="button"
-              color="text.primary"
-              href="/about"
-              sx={{ my: 1, mx: 1.5, textDecoration: 'none' }}
-            >
-              About
-            </Link> */}
           </nav>
           {user ? null : (
             <>

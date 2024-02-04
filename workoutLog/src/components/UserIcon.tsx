@@ -2,6 +2,7 @@ import { Avatar, IconButton, Menu, MenuItem } from '@mui/material';
 import { useState } from 'react';
 import { auth } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 
 export default function UserIcon() {
   const user = auth.currentUser;
@@ -34,7 +35,15 @@ export default function UserIcon() {
       >
         {/* <AccountCircle /> */}
 
-        <Avatar alt="User Avatar" src={user?.photoURL} />
+        {user?.photoURL ? (
+          <Avatar
+            alt="User Avatar"
+            src={user?.photoURL}
+            sx={{ width: 50, height: 50 }}
+          />
+        ) : (
+          <AccountCircleRoundedIcon fontSize="large" />
+        )}
       </IconButton>
       <Menu
         sx={{}}
@@ -52,6 +61,14 @@ export default function UserIcon() {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
+        <MenuItem>
+          <Link
+            to={'/record'}
+            style={{ textDecoration: 'none', color: 'black' }}
+          >
+            &nbsp;Record&nbsp;
+          </Link>
+        </MenuItem>
         <MenuItem>
           <Link
             to={'/profile'}

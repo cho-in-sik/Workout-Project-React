@@ -9,6 +9,7 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/protected-route';
 import Profile from './routes/profile';
 import Record from './routes/record';
+import Community from './routes/community';
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
             <Profile />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: 'community',
+        element: <Community />,
       },
     ],
     errorElement: <ErrorComponent />,
