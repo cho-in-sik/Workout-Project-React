@@ -19,7 +19,7 @@ import { FirebaseError } from 'firebase/app';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ErrorAlert } from '../components/alert';
-import GithubButton from '../components/github-btn';
+import GithubButton from '../components/Auth/github-btn';
 
 export interface IForm {
   name: string;

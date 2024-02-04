@@ -17,29 +17,19 @@ import { CssVarsProvider } from '@mui/joy/styles';
 import { auth, storage } from '../firebase';
 import { updateProfile } from 'firebase/auth';
 import DeleteModal from '../components/deleteModal';
-import { styled } from '@mui/joy';
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
 import { useForm } from 'react-hook-form';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import ProfileEmailForm from '../components/profile/profileEmailForm';
+import { VisuallyHiddenInput } from '../components/VisuallyHiddenInput';
 
 interface IForm {
   email?: string;
   username?: string;
 }
-const VisuallyHiddenInput = styled('input')`
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  white-space: nowrap;
-  width: 1px;
-`;
 
 export default function Profile() {
   const navigate = useNavigate();

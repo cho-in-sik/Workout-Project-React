@@ -5,13 +5,22 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   TextField,
   Typography,
 } from '@mui/material';
 import styled from 'styled-components';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { useState } from 'react';
+
+import { VisuallyHiddenInput } from '../components/VisuallyHiddenInput';
+import { auth } from '../firebase';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { FirebaseError } from 'firebase/app';
+
+interface IForm {
+  category?: string;
+  content?: string;
+}
 
 const Wrapper = styled.div`
   width: 100%;
@@ -22,24 +31,26 @@ const Wrapper = styled.div`
   flex-direction: column;
 `;
 
-const VisuallyHiddenInput = styled('input')({
-  clip: 'rect(0 0 0 0)',
-  clipPath: 'inset(50%)',
-  height: 1,
-  overflow: 'hidden',
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  whiteSpace: 'nowrap',
-  width: 1,
-});
-
 export default function Record() {
-  const [age, setAge] = useState('');
+  const navigate = useNavigate();
+  const user = auth.currentUser;
+  const { register, handleSubmit, setError } = useForm();
 
-  const handleChange = (event: SelectChangeEvent) => {
-    setAge(event.target.value as string);
+  const onSubmit = async (data: IForm) => {
+    try {
+      console.log(data);
+      // navigate('/community');
+    } catch (e) {
+      if (e instanceof FirebaseError) {
+        setError(
+          'firebaseError',
+          { message: `${e.message}` },
+          { shouldFocus: true },
+        );
+      }
+    }
   };
+
   return (
     <Wrapper>
       <Typography variant="h3" gutterBottom my={5}>
@@ -62,13 +73,12 @@ export default function Record() {
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={age}
             label="Age"
-            onChange={handleChange}
+            {...register('category', { required: true })}
           >
-            <MenuItem value={10}>Ten</MenuItem>
-            <MenuItem value={20}>Twenty</MenuItem>
-            <MenuItem value={30}>Thirty</MenuItem>
+            <MenuItem value={10}>프리웨이트</MenuItem>
+            <MenuItem value={20}>머신</MenuItem>
+            <MenuItem value={30}>오운완</MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -79,8 +89,14 @@ export default function Record() {
         sx={{ minWidth: 300, marginTop: 3 }}
         multiline
         rows={4}
+        {...register('content', { required: '내용을 입력하세요.' })}
       />
-      <Button sx={{ minWidth: 300, marginTop: 3 }} variant="contained">
+      <Button
+        sx={{ minWidth: 300, marginTop: 3 }}
+        variant="contained"
+        type="submit"
+        onClick={handleSubmit(onSubmit)}
+      >
         등록하기
       </Button>
     </Wrapper>
