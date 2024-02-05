@@ -12,14 +12,17 @@ import styled from 'styled-components';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 import { VisuallyHiddenInput } from '../components/VisuallyHiddenInput';
-import { auth } from '../firebase';
+import { auth, db, storage } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { FirebaseError } from 'firebase/app';
+import { addDoc, collection } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 interface IForm {
   category?: string;
   content?: string;
+  photo?: FileList;
 }
 
 const Wrapper = styled.div`
@@ -37,9 +40,27 @@ export default function Record() {
   const { register, handleSubmit, setError } = useForm();
 
   const onSubmit = async (data: IForm) => {
+    if (user === null || data.photo === undefined) return;
+
     try {
-      console.log(data);
-      // navigate('/community');
+      //storage에 사진 저장
+      const file = data.photo[0];
+      const locationRef = ref(
+        storage,
+        `workoutrecords/${user.uid}-${user.displayName}`,
+      );
+      const result = await uploadBytes(locationRef, file);
+      const workoutRecordrUrl = await getDownloadURL(result.ref);
+      //db에 정보 저장
+      await addDoc(collection(db, 'workoutrecords'), {
+        category: data.category,
+        content: data.content,
+        createdAt: Date.now(),
+        username: user.displayName || 'Anonymous',
+        userId: user.uid,
+        photoUrl: workoutRecordrUrl,
+      });
+      navigate('/community');
     } catch (e) {
       if (e instanceof FirebaseError) {
         setError(
@@ -64,7 +85,10 @@ export default function Record() {
         color="info"
       >
         사진 추가
-        <VisuallyHiddenInput type="file" />
+        <VisuallyHiddenInput
+          type="file"
+          {...register('photo', { required: true })}
+        />
       </Button>
 
       <Box sx={{ minWidth: 300, marginTop: 5 }}>
