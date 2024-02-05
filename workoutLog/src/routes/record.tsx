@@ -47,10 +47,11 @@ export default function Record() {
       const file = data.photo[0];
       const locationRef = ref(
         storage,
-        `workoutrecords/${user.uid}-${user.displayName}`,
+        `workoutrecords/${Date.now()}-${user.uid}-${user.displayName}`,
       );
       const result = await uploadBytes(locationRef, file);
       const workoutRecordrUrl = await getDownloadURL(result.ref);
+
       //db에 정보 저장
       await addDoc(collection(db, 'workoutrecords'), {
         category: data.category,
