@@ -3,7 +3,6 @@ import Typography from '@mui/material/Typography';
 import WeightRulesModal from './WeightRuleModal';
 import {
   collection,
-  getDocs,
   limit,
   onSnapshot,
   orderBy,

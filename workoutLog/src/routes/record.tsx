@@ -61,6 +61,7 @@ export default function Record() {
         userId: user.uid,
         photoUrl: workoutRecordrUrl,
         profileUrl: user.photoURL,
+        like: 0,
       });
       navigate('/community');
     } catch (e) {
