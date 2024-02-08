@@ -60,6 +60,7 @@ export default function Record() {
         username: user.displayName || 'Anonymous',
         userId: user.uid,
         photoUrl: workoutRecordrUrl,
+        profileUrl: user.photoURL,
       });
       navigate('/community');
     } catch (e) {

@@ -32,8 +32,15 @@ export default function Community() {
     );
     const snapshot = await getDocs(recordsQuery);
     const records = snapshot.docs.map((doc) => {
-      const { createdAt, category, content, photoUrl, username, userId } =
-        doc.data();
+      const {
+        createdAt,
+        category,
+        content,
+        photoUrl,
+        username,
+        userId,
+        profileUrl,
+      } = doc.data();
       return {
         createdAt,
         category,
@@ -42,6 +49,7 @@ export default function Community() {
         username,
         id: doc.id,
         userId,
+        profileUrl,
       };
     });
     setRecords(records);
@@ -49,7 +57,7 @@ export default function Community() {
   useEffect(() => {
     fetchRecords();
   }, []);
-  console.log(records);
+
   const handleClick = (record: IRecords) => {
     navigate(record.id, { state: { record } });
   };
@@ -59,6 +67,7 @@ export default function Community() {
         {records.map((record) => (
           <ImageListItem key={record.id}>
             <img
+              style={{ cursor: 'pointer' }}
               srcSet={`${record.photoUrl}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
               src={`${record.photoUrl}?w=164&h=164&fit=crop&auto=format`}
               alt={record.content}

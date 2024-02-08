@@ -62,11 +62,11 @@ export default function Profile() {
   };
 
   const handleNameSubmit = async (data: IForm) => {
-    console.log(1);
     if (data.username === undefined) return;
     try {
       if (user) {
         await updateProfile(user, { displayName: data.username });
+        //updateProfile은 유저 정보만 변경 한거지 record등에 있는 것은 변경 하지 않음
       }
       navigate('/');
     } catch (e) {
