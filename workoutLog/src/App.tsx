@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import LoadingScreen from './components/loading-screen';
 import router from './Router';
 import { auth } from './firebase';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const GlobalStyles = createGlobalStyle`
   ${reset};
@@ -22,12 +24,13 @@ const GlobalStyles = createGlobalStyle`
   }
 `;
 
+const queryClient = new QueryClient();
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const init = async () => {
     //파이어베이스 기다리기
     await auth.authStateReady();
-
     setIsLoading(false);
   };
   useEffect(() => {
@@ -35,8 +38,11 @@ function App() {
   }, []);
   return (
     <>
-      <GlobalStyles />
-      {isLoading ? <LoadingScreen /> : <RouterProvider router={router} />}
+      <QueryClientProvider client={queryClient}>
+        <GlobalStyles />
+        {isLoading ? <LoadingScreen /> : <RouterProvider router={router} />}
+        <ReactQueryDevtools />
+      </QueryClientProvider>
     </>
   );
 }
