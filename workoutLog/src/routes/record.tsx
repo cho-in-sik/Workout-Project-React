@@ -103,9 +103,9 @@ export default function Record() {
             label="Age"
             {...register('category', { required: true })}
           >
-            <MenuItem value={10}>프리웨이트</MenuItem>
-            <MenuItem value={20}>머신</MenuItem>
-            <MenuItem value={30}>오운완</MenuItem>
+            <MenuItem value={'프리웨이트'}>프리웨이트</MenuItem>
+            <MenuItem value={'머신'}>머신</MenuItem>
+            <MenuItem value={'오운완'}>오운완</MenuItem>
           </Select>
         </FormControl>
       </Box>
