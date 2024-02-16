@@ -17,7 +17,9 @@ import ShareIcon from '@mui/icons-material/Share';
 import { useState } from 'react';
 import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore';
 import HeartButton from './HeartButton';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+const MUTATION_KEY = 'patch-like';
 
 export default function WorkoutBox() {
   const navigate = useNavigate();
@@ -42,13 +44,17 @@ export default function WorkoutBox() {
   };
   //좋아요 기능
   const toggleLike = async () => {
-    setLike(!like);
-
-    if (data?.like) {
+    if (like) {
+      setLike(!like);
+      await updateDoc(recordRef, { like: data?.like - 1 });
+    }
+    if (!like) {
+      setLike(!like);
       await updateDoc(recordRef, { like: data?.like + 1 });
     }
   };
   const updateMutation = useMutation({
+    mutationKey: [MUTATION_KEY],
     mutationFn: () => toggleLike(),
   });
 
@@ -67,6 +73,7 @@ export default function WorkoutBox() {
     console.log(error);
     return <h1>error</h1>;
   }
+  // console.log(data);
 
   return (
     <Card sx={{ maxWidth: 600 }}>
